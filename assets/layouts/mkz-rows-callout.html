@@ -1,0 +1,14 @@
+---
+layout: slide
+---
+
+{{{ slide.content }}}
+
+{{# slide.blocks }}
+<div class="row-fluid" style="height:{{{ height }}}; margin-bottom:2%">
+  <div class="bs-callout bs-callout-{{{ type }}}" style="height:100%; padding:0; padding-left:10px;">
+    <h3>{{{ title }}}</h3>
+    {{{ content }}}
+  </div>
+</div>
+{{/ slide.blocks }}

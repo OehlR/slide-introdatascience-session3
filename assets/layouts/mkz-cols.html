@@ -1,0 +1,13 @@
+---
+layout: slide
+---
+
+{{{ slide.content }}}      
+<div class="row-fluid show-grid" style="height:100%;">
+  {{# slide.blocks }}
+  <div class="{{class}}" style="height:100%;">
+      <h3>{{{ title }}}</h3>
+      {{{ content }}}
+  </div>
+  {{/ slide.blocks }}
+</div>

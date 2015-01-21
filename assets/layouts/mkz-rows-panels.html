@@ -1,0 +1,16 @@
+---
+layout: slide
+---
+
+{{{ slide.content }}}
+
+{{# slide.blocks }}
+<div class="panel panel-{{{ type }}}" style="height:{{{ height }}};">
+  <div class="panel-heading">
+    <h4 class="panel-title">{{{ title }}}</h4>
+  </div>
+  <div class="panel-body">
+    {{{ content }}}
+  </div>
+</div>
+{{/ slide.blocks }}

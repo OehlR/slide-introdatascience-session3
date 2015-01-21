@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Améliorer les performances de R</title>
+  <meta charset="utf-8">
+  <meta name="description" content="Améliorer les performances de R">
+  <meta name="author" content="Matthias Oehler">
+  <meta name="generator" content="slidify" />
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/default.css" media="all" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/phone.css" 
+    media="only screen and (max-device-width: 480px)" >
+  <link rel="stylesheet" href="libraries/frameworks/io2012/css/slidify.css" >
+  <link rel="stylesheet" href="libraries/highlighters/highlight.js/css/tomorrow.css" />
+  <base target="_blank"> <!-- This amazingness opens all links in a new tab. -->  <link rel=stylesheet href="libraries/widgets/bootstrap/css/bootstrap.css"></link>
+<link rel=stylesheet href="./assets/css/bootstrap3fix.css"></link>
+<link rel=stylesheet href="./assets/css/font-awesome.css"></link>
+<link rel=stylesheet href="./assets/css/font-awesome.min.css"></link>
+<link rel=stylesheet href="./assets/css/latto-font.css"></link>
+<link rel=stylesheet href="./assets/css/mkz.css"></link>
+<link rel=stylesheet href="./assets/css/quotes.css"></link>
+<link rel=stylesheet href="./assets/css/ribbons.css"></link>
+
+  
+  <!-- Grab CDN jQuery, fall back to local if offline -->
+  <script src="http://ajax.aspnetcdn.com/ajax/jQuery/jquery-1.7.min.js"></script>
+  <script>window.jQuery || document.write('<script src="libraries/widgets/quiz/js/jquery.js"><\/script>')</script> 
+  <script data-main="libraries/frameworks/io2012/js/slides" 
+    src="libraries/frameworks/io2012/js/require-1.0.8.min.js">
+  </script>
+  
+  
+
+</head>
+<body style="opacity: 0">
+  <slides class="layout-widescreen">
+    
+    <!-- LOGO SLIDE -->
+      <slide class="nobackground">
+    <article class="flexbox vcenter">
+      <span>
+        <img width='600px' src="assets/img/logo_polytech.jpg">
+      </span>
+    </article>
+  </slide>
+    <slide class="title-slide segue nobackground">
+  <aside class="gdbar">
+    <img src="assets/img/logods.png">
+  </aside>
+  <hgroup class="auto-fadein">
+    <h1>Améliorer les performances de R</h1>
+    <h2>2014-2015</h2>
+    <p>Matthias Oehler<br/>Vice Président Data @Makazi</p>
+  </hgroup>
+    <a href="https://github.com/oehlr/slide-introdatascience-session3/zipball/gh-pages" class="example">
+     Download
+    </a>
+  <article></article>  
+</slide>
+    
+
+    <!-- SLIDES -->
+    <slide class="" id="slide-1" style="background:;">
+  <hgroup>
+    <h2>Sommaire - Session 3</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p></p>
+  </div>
+  
+  <article data-timings="">
+    
+      
+
+<div class="row-fluid show-grid" style="height:100%;">
+</div>
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="section-slide" id="slide-2" style="background-color:#00B7BE;">
+  <div class="row-fluid" style="background-color:rgba(255,255,255,0.25);margin:10%;width:80%;height:60%;">
+    <div class="row-fluid" style="height:10%;"></div>
+    <div class="row-fluid" style="height:40%;">
+        <center><img alt="75%x75%" class="img75 auto-fadein" src="assets/img/white_nuclearidea.png" style="height: 150px; display: block;"></center>
+    </div>
+    <div class="row-fluid" style="height:50%;">
+      <center>
+        <hgroup class="auto-fadein">
+          <h1>MESURER LA PERFORMANCE</h1>
+          
+        </hgroup>
+      </center>
+    </div>
+  </div>
+</slide>
+
+<slide class="" id="slide-3" style="background:;">
+  <hgroup>
+    <h2>Introduction</h2>
+  </hgroup>
+  <article data-timings="">
+    <p><img src="assets/fig/unnamed-chunk-1.png" title="plot of chunk unnamed-chunk-1" alt="plot of chunk unnamed-chunk-1" style="display: block; margin: auto;" /></p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-4" style="background:;">
+  <hgroup>
+    <h2>Analyser</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>L'analyse du code est necessaire lorsque les temps de traitement ne sont plus raisonnables compte tenu de l'objectif donné à l'algorithme. Ou parce que l'analyse est impossible car trop longue.</p>
+  </div>
+  
+  <article data-timings="">
+    <ul>
+<li>Identifier les goulots d&#39;étranglement d&#39;un code peut être très chronophage dès lors que le nombre de ligne de code devient élevé</li>
+<li>C&#39;est cependant une étape indispensable pour examiner les temps de traitement de chaque partie du programme</li>
+<li>Le programme peut fonctionner assez rapidement sur le jeu de données test mais qu&#39;en sera t&#39;il sur des &quot;vrais&quot; données </li>
+<li>Ce doit etre un reflexe chez le Data Scientist</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-5" style="background:;">
+  <hgroup>
+    <h2>System.time()</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>la fonction system.time retourne le temps CPU (entre autre) de l'expression utilisée</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r"># Calcul de la somme cumulée du vecteur x
+x &lt;- runif(2e4)
+system.time({
+  cusum &lt;- NULL
+  for (i in 1:length(x)) cusum &lt;- c(cusum,sum(x[1:i]))
+})
+</code></pre>
+
+<pre><code>   user  system elapsed 
+  3.099   1.064   4.167 
+</code></pre>
+
+<ul>
+<li><code>user</code> correspond au temps CPU chargé de l&#39;éxecution de l&#39;appel des instructions utilisateur</li>
+<li><code>system</code> correspond au temps CPU chargé de l&#39;éxecution coté système</li>
+</ul>
+
+<div class="alert alert-info" role="alert"><b>Question :</b> Comment améliorer cette fonction ?
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-6" style="background:;">
+  <hgroup>
+    <h2>System.time()</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>la fonction system.time retourne le temps CPU (entre autre) de l'expression utilisée</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r"># Calcul de la somme cumulée du vecteur x
+x &lt;- runif(2e4)
+system.time({
+  cusum &lt;- numeric(length(x))
+  for (i in 1:length(x)) cusum[i] &lt;- sum(x[1:i])
+})
+</code></pre>
+
+<pre><code>   user  system elapsed 
+  2.537   0.675   3.222 
+</code></pre>
+
+<ul>
+<li><u>Modification</u> : Préparation du vecteur de résultat</li>
+<li>Gain de <strong>25% de temps</strong></li>
+</ul>
+
+<div class="alert alert-info" role="alert"><b>Question :</b> Mais encore ... ?
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-7" style="background:;">
+  <hgroup>
+    <h2>System.time()</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>la fonction system.time retour le temps CPU (entre autre) de l'expression utilisée</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r"># Calcul de la somme cumulée du vecteur x
+x &lt;- runif(2e4)
+system.time({
+  cusum &lt;- x
+  for (i in 2:length(x)) cusum[i] &lt;- cusum[i-1]+cusum[i]
+})
+</code></pre>
+
+<pre><code>   user  system elapsed 
+  0.039   0.000   0.038 
+</code></pre>
+
+<ul>
+<li><u>Modification</u> : Suppression des calculs répétitifs des sum</li>
+<li><strong>100x plus rapide</strong> que la version précédente</li>
+</ul>
+
+<div class="alert alert-info" role="alert"><b>Question :</b> On peut faire mieux encore mieux ?
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-8" style="background:;">
+  <hgroup>
+    <h2>System.time()</h2>
+  </hgroup>
+  <article data-timings="">
+    <pre><code class="r"># Calcul de la somme cumulée du vecteur x
+x &lt;- runif(2e4)
+system.time({
+  cusum &lt;- cumsum(x)
+})
+</code></pre>
+
+<pre><code>   user  system elapsed 
+      0       0       0 
+</code></pre>
+
+<p>Hum ??? Est ce que cela a vraiment marché ? Essayons avec un vecteur 100x plus grand</p>
+
+<pre><code class="r">x&lt;- runif(2e6) # avec un vecteur 100x plus grand ?
+system.time(cusum &lt;- cumsum(x))
+</code></pre>
+
+<pre><code>   user  system elapsed 
+  0.013   0.004   0.017 
+</code></pre>
+
+<p>Yes !</p>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="segue quote white" id="slide-9" style="background:;">
+  
+  <div class="slide-description">
+    <p></p>
+  </div>
+  
+  <article data-timings="">
+    <p><q>Ok bien compris. Mais en plus simple ?</q></p>
+
+<style>
+.dark q {
+  color: white;
+}
+</style>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-10" style="background:;">
+  <hgroup>
+    <h2>Microbenchmark (package)</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Microbenchmark permet de mesurer et comparer les temps d'exécution d'expression R.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">f1 &lt;- function(x) {
+  cusum &lt;- NULL
+  for (i in 1:length(x)) cusum &lt;- c(cusum,sum(x[1:i]))
+}
+
+f2 &lt;- function(x) {
+  cusum &lt;- numeric(length(x))
+  for (i in 1:length(x)) cusum[i] &lt;- sum(x[1:i])
+}
+
+f3 &lt;- function(x) {
+  cusum &lt;- x
+  for (i in 2:length(x)) cusum[i] &lt;- cusum[i-1]+cusum[i]
+}
+
+f4 &lt;- function(x) {
+  cusum &lt;- cumsum(x)
+}
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-11" style="background:;">
+  <hgroup>
+    <h2>Microbenchmark (package)</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Microbenchmark permet de mesurer et comparer les temps d'exécution d'expression R.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">library(microbenchmark)
+x&lt;-runif(1e3)
+microbenchmark(f1(x),f2(x),f3(x),f4(x))
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: microseconds
+  expr      min       lq     mean median       uq   max neval
+ f1(x) 8103.796 8800.146 13341.73  10937 18580.26 23007   100
+ f2(x) 7035.700 7795.010 10592.14   8443 10791.17 22588   100
+ f3(x) 1646.538 1713.178  2088.85   1787  1988.32 11603   100
+ f4(x)    5.688    6.926    10.53     11    12.31    22   100
+</code></pre>
+
+<ul>
+<li>Un même résultat peut etre obtenu de plusieurs manières différents. Mais il y a un fable nombre de &quot;bonnes&quot; manières. Ici, la bonne manière est <strong>1000x plus rapide</strong> que la mauvaise manière</li>
+</ul>
+
+<div class="alert alert-info" role="alert"><b>Conclusion :</b> Toujours préférer les fonctions natives et déjà compilées.
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-12" style="background:;">
+  <hgroup>
+    <h2>Conclusion</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p></p>
+  </div>
+  
+  <article data-timings="">
+    <ul>
+<li>System.time et microbenchamrk permettent de comparer des bouts de code entre eux assez simplement</li>
+<li>Ils sont utiles lorsque l&#39;on a identifié où le code prend du temps d&#39;exécution</li>
+<li>Mais comment trouver les parties de code consommatrices de temps dans des milliers de lignes de code ?</li>
+</ul>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-13" style="background:;">
+  <hgroup>
+    <h2>Profiling du code R</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <ul>
+<li><p>La fonction <code>Rprof()</code> lance le profiler de R</p></li>
+<li><p>La fonction <code>summaryRprof()</code> sort les statistiques à partir du fichier généré par <code>Rprof()</code></p></li>
+<li><p><code>Rprof()</code> n&#39;est utile que si le temps d&#39;exécution code est &quot;mesurable&quot; (&gt; 1–10msecs)</p></li>
+</ul>
+
+<pre><code class="r">n &lt;- 1e5
+y &lt;- gl(2, 100, n, labels = c(&quot;A&quot;,&quot;B&quot;))
+x &lt;- runif(n)
+
+Rprof(tmp &lt;- tempfile())
+lm(x ~ y)
+Rprof()
+srp &lt;- summaryRprof(tmp)
+unlink(tmp)
+</code></pre>
+
+<div class="alert alert-info" role="alert"><b>Info :</b> tempfile() permet de générer un fichier vide dans un répertoire temporaire. Le fichier est supprimé par la fonction unlink()
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-14" style="background:;">
+  <article data-timings="">
+    <pre><code class="r">head(srp$by.self)
+</code></pre>
+
+<pre><code>                        self.time self.pct total.time total.pct
+&quot;lm&quot;                         0.06    27.27       0.22    100.00
+&quot;as.character&quot;               0.06    27.27       0.06     27.27
+&quot;.External2&quot;                 0.04    18.18       0.08     36.36
+&quot;anyDuplicated.default&quot;      0.02     9.09       0.02      9.09
+&quot;is.na&quot;                      0.02     9.09       0.02      9.09
+&quot;structure&quot;                  0.02     9.09       0.02      9.09
+</code></pre>
+
+<pre><code class="r">print(head(srp$by.total))
+</code></pre>
+
+<pre><code>                 total.time total.pct self.time self.pct
+&quot;lm&quot;                   0.22    100.00      0.06    27.27
+&quot;.External2&quot;           0.08     36.36      0.04    18.18
+&quot;as.character&quot;         0.06     27.27      0.06    27.27
+&quot;model.response&quot;       0.06     27.27      0.00     0.00
+&quot;[.data.frame&quot;         0.04     18.18      0.00     0.00
+&quot;[&quot;                    0.04     18.18      0.00     0.00
+</code></pre>
+
+<div class="alert alert-info" role="alert"><b>Aller plus loin :</b> d'autres packages existent : Rprof, profr, lineprof
+</div>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="section-slide" id="slide-15" style="background-color:#F39D01;">
+  <div class="row-fluid" style="background-color:rgba(255,255,255,0.25);margin:10%;width:80%;height:60%;">
+    <div class="row-fluid" style="height:10%;"></div>
+    <div class="row-fluid" style="height:40%;">
+        <center><img alt="75%x75%" class="img75 auto-fadein" src="assets/img/white_nuclearidea.png" style="height: 150px; display: block;"></center>
+    </div>
+    <div class="row-fluid" style="height:50%;">
+      <center>
+        <hgroup class="auto-fadein">
+          <h1>LES BONNES PRATIQUES</h1>
+          
+        </hgroup>
+      </center>
+    </div>
+  </div>
+</slide>
+
+<slide class="" id="slide-16" style="background:;">
+  <hgroup>
+    <h2>SQRT</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utiliser les versions précompilées permet d'obtenir de meilleurs performances...</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">x &lt;- runif(100)
+microbenchmark(
+  sqrt(x),
+  x ^ 0.5
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: nanoseconds
+    expr min    lq   mean median   uq  max neval
+ sqrt(x) 683 715.5  902.4  780.5  853 9991   100
+   x^0.5 848 867.0 1043.5  929.5 1044 8738   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-17" style="background:;">
+  <hgroup>
+    <h2>MEAN</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p class='..'>le contre-exemple parfait</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">microbenchmark(
+  &quot;mean1&quot; = mean(x),
+  &quot;mean2&quot; = sum(x) / length(x)
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: microseconds
+  expr   min     lq  mean median     uq    max neval
+ mean1 9.952 10.430 11.23 10.643 10.848   62.2   100
+ mean2 2.156  2.368 80.31  2.478  2.567 7784.6   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-18" style="background:;">
+  <hgroup>
+    <h2>SQRT</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">microbenchmark(
+  &quot;[32, 11]&quot;      = mtcars[32, 11],
+  &quot;$carb[32]&quot;     = mtcars$carb[32],
+  &quot;[[c(11, 32)]]&quot; = mtcars[[c(11, 32)]],
+  &quot;[[11]][32]&quot;    = mtcars[[11]][32],
+  &quot;.subset2&quot;      = .subset2(mtcars, 11)[32]
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: nanoseconds
+          expr   min      lq    mean  median    uq   max neval
+      [32, 11] 16799 17765.0 18969.2 18095.0 18837 63298   100
+     $carb[32]  2079  2630.5  3006.7  2946.0  3190 10639   100
+ [[c(11, 32)]]  6392  7622.0  8603.8  8228.5  8676 50032   100
+    [[11]][32]  5685  6995.5  7674.2  7345.0  7938 17918   100
+      .subset2   357   463.5   638.2   536.5   635  9725   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-19" style="background:;">
+  <hgroup>
+    <h2>SQRT</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">x1 &lt;- x2 &lt;- x3 &lt;- x4 &lt;- runif(1000)
+
+microbenchmark(
+  &quot;loop&quot;        = for (i in 1:length(x1)) if(x1[i]&lt;=0.5) x1[i] &lt;- 0,
+  &quot;ifelse&quot;      = x2 &lt;- ifelse(x2 &lt;= 0.5, x2, 0),
+  &quot;inplace&quot;     = x3[x3&lt;=0.5] &lt;- 0,
+  &quot;inplace_whi&quot; = x4[which(x4&lt;=0.5)] &lt;- 0
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: microseconds
+        expr     min      lq    mean  median      uq     max neval
+        loop 1020.71 1085.27 1523.78 1355.79 1958.80 3856.46   100
+      ifelse  162.45  166.81  204.71  190.08  231.43  407.60   100
+     inplace   33.35   35.06   41.59   37.53   44.88   93.56   100
+ inplace_whi   11.86   14.65   19.08   17.87   20.72   57.95   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-20" style="background:;">
+  <hgroup>
+    <h2>Prepare vectors</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">f1 &lt;- function() {
+  x &lt;- NULL; for (i in 1:10000) x&lt;-c(x,i)
+}
+f2 &lt;- function() {
+  x &lt;- numeric(10000); for (i in 1:10000) x[i]&lt;i
+}
+
+microbenchmark(
+  &quot;extend&quot; = f1(), &quot;fill&quot; = f2()
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: milliseconds
+   expr     min      lq    mean  median      uq    max neval
+ extend 156.784 163.269 172.115 166.386 174.730 252.07   100
+   fill   4.744   4.907   5.824   5.008   5.721  11.31   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-21" style="background:;">
+  <hgroup>
+    <h2>Compiler</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">f &lt;- function(x) {
+  for (i in 2:length(x)) x[i] &lt;- x[i-1]+x[i]; return(x)
+}
+
+library(compiler)
+fc &lt;- cmpfun(f)
+
+microbenchmark(
+  &quot;original&quot; = f(x), &quot;compiled&quot; = fc(x), &quot;internal&quot; = cumsum(x)
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: nanoseconds
+     expr    min     lq   mean median     uq    max neval
+ original 187783 192763 205015 197127 201137 357625   100
+ compiled  36947  43474  46624  45822  48375  64172   100
+ internal    898   1030   1354   1180   1353   9088   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-22" style="background:;">
+  <hgroup>
+    <h2>data.table vs. data.frame</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">n &lt;- 1e5
+DF &lt;- data.frame(x=sample(c(&quot;a&quot;,&quot;b&quot;,&quot;c&quot;),n,replace=T), y=runif(n), v=1:n)
+DT &lt;- data.table(x=sample(c(&quot;a&quot;,&quot;b&quot;,&quot;c&quot;),n,replace=T), y=runif(n), v=1:n)
+setkey(DT,x)
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-23" style="background:;">
+  <hgroup>
+    <h2>data.table vs. data.frame</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">microbenchmark(
+  &quot;DF.subset&quot; = nrow(DF[which(DF$x==&quot;b&quot;),]),
+  &quot;DT.subset&quot; = nrow(DT[&quot;b&quot;,])
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: milliseconds
+      expr   min     lq   mean median     uq    max neval
+ DF.subset 11.45 12.573 14.231 12.767 16.448 21.875   100
+ DT.subset  1.67  2.085  2.344  2.149  2.297  7.226   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-24" style="background:;">
+  <hgroup>
+    <h2>data.table vs. data.frame</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">microbenchmark(
+  &quot;DF.add&quot; = DF$y &lt;- 1,
+  &quot;DT.add&quot; = DT[,y:=1]
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: microseconds
+   expr   min     lq   mean median     uq   max neval
+ DF.add 957.7 2626.0 4776.1 3656.0 5380.1 86938   100
+ DT.add 458.4  598.4  712.6  727.4  834.2  1135   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="" id="slide-25" style="background:;">
+  <hgroup>
+    <h2>Aggregate</h2>
+  </hgroup>
+  
+  <div class="slide-description">
+    <p>Utilisation de la puissance des serveurs pour les calculs.</p>
+  </div>
+  
+  <article data-timings="">
+    <pre><code class="r">microbenchmark(
+  &quot;DF.aggregation&quot; = aggregate(DF$y,list(DF$x),sum),
+  &quot;DT.aggregation&quot; = DT[,y:=1]
+)
+</code></pre>
+
+<pre><code>Loading required namespace: multcomp
+</code></pre>
+
+<pre><code>Unit: microseconds
+           expr     min      lq    mean  median      uq    max neval
+ DF.aggregation 69571.7 73596.9 79281.7 75168.3 77574.6 157016   100
+ DT.aggregation   398.7   593.1   797.3   656.9   809.6   5717   100
+</code></pre>
+
+  </article>
+  <!-- Presenter Notes -->
+</slide>
+
+<slide class="section-slide" id="slide-26" style="background-color:#00B7BE;">
+  <div class="row-fluid" style="background-color:rgba(255,255,255,0.25);margin:10%;width:80%;height:60%;">
+    <div class="row-fluid" style="height:10%;"></div>
+    <div class="row-fluid" style="height:40%;">
+        <center><img alt="75%x75%" class="img75 auto-fadein" src="assets/img/white_nuclearidea.png" style="height: 150px; display: block;"></center>
+    </div>
+    <div class="row-fluid" style="height:50%;">
+      <center>
+        <hgroup class="auto-fadein">
+          <h1>R &amp; PACKAGE</h1>
+          
+        </hgroup>
+      </center>
+    </div>
+  </div>
+</slide>
+
+<slide class="section-slide" id="slide-27" style="background-color:#00B7BE;">
+  <div class="row-fluid" style="background-color:rgba(255,255,255,0.25);margin:10%;width:80%;height:60%;">
+    <div class="row-fluid" style="height:10%;"></div>
+    <div class="row-fluid" style="height:40%;">
+        <center><img alt="75%x75%" class="img75 auto-fadein" src="assets/img/white_nuclearidea.png" style="height: 150px; display: block;"></center>
+    </div>
+    <div class="row-fluid" style="height:50%;">
+      <center>
+        <hgroup class="auto-fadein">
+          <h1>PRODUIT</h1>
+          
+        </hgroup>
+      </center>
+    </div>
+  </div>
+</slide>
+
+    <slide class="backdrop"></slide>
+  </slides>
+  <div class="pagination pagination-small" id='io2012-ptoc' style="display:none;">
+    <ul>
+      <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=1 title='Sommaire - Session 3'>
+         1
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=2 title='MESURER LA PERFORMANCE'>
+         2
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=3 title='Introduction'>
+         3
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=4 title='Analyser'>
+         4
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=5 title='System.time()'>
+         5
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=6 title='System.time()'>
+         6
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=7 title='System.time()'>
+         7
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=8 title='System.time()'>
+         8
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=9 title=''>
+         9
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=10 title='Microbenchmark (package)'>
+         10
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=11 title='Microbenchmark (package)'>
+         11
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=12 title='Conclusion'>
+         12
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=13 title='Profiling du code R'>
+         13
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=14 title=''>
+         14
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=15 title='LES BONNES PRATIQUES'>
+         15
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=16 title='SQRT'>
+         16
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=17 title='MEAN'>
+         17
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=18 title='SQRT'>
+         18
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=19 title='SQRT'>
+         19
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=20 title='Prepare vectors'>
+         20
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=21 title='Compiler'>
+         21
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=22 title='data.table vs. data.frame'>
+         22
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=23 title='data.table vs. data.frame'>
+         23
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=24 title='data.table vs. data.frame'>
+         24
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=25 title='Aggregate'>
+         25
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=26 title='R &amp; PACKAGE'>
+         26
+      </a>
+    </li>
+    <li>
+      <a href="#" target="_self" rel='tooltip' 
+        data-slide=27 title='PRODUIT'>
+         27
+      </a>
+    </li>
+  </ul>
+  </div>  <!--[if IE]>
+    <script 
+      src="http://ajax.googleapis.com/ajax/libs/chrome-frame/1/CFInstall.min.js">  
+    </script>
+    <script>CFInstall.check({mode: 'overlay'});</script>
+  <![endif]-->
+</body>
+  <!-- Load Javascripts for Widgets -->
+  <script src="libraries/widgets/bootstrap/js/bootstrap.min.js"></script>
+<script src="libraries/widgets/bootstrap/js/bootbox.min.js"></script>
+<script src="./assets/js/bootstrap.js"></script>
+<script src="./assets/js/jquery-1.7.min.js"></script>
+<script src="./assets/js/mkz.js"></script>
+
+  <script>  
+  $(function (){ 
+    $("#example").popover(); 
+    $("[rel='tooltip']").tooltip(); 
+  });  
+  </script>  
+  <!-- LOAD HIGHLIGHTER JS FILES -->
+  <script src="libraries/highlighters/highlight.js/highlight.pack.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <!-- DONE LOADING HIGHLIGHTER JS FILES -->
+   
+  </html>

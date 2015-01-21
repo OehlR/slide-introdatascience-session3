@@ -1,0 +1,427 @@
+---
+title       : Améliorer les performances de R
+subtitle    : 2014-2015
+author      : Matthias Oehler
+job         : Vice Président Data @Makazi
+github      : {user: oehlr, repo: slide-introdatascience-session3}
+framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
+highlighter : highlight.js  # {highlight.js, prettify, highlight}
+hitheme     : tomorrow      # 
+widgets     : [bootstrap]            # {mathjax, quiz, bootstrap}
+mode        : selfcontained # {standalone, draft}
+knit        : slidify::knit2slides
+logo        : logods.png
+biglogo     : logo_polytech.jpg
+--- { tpl: mkz-cols-thumbs, 
+      description: ""}
+
+```{r envir, comment = NA, message = F, echo = F, cache=TRUE}
+pal <- list()
+pal$yellow <- "#FBCEB6"
+pal$orange <- "#F39D01"
+pal$red    <- "#FE5745"
+pal$blue   <- "#7F7FCF"
+pal$cyan   <- "#00B7BE"
+```
+
+## Sommaire - Session 3
+
+
+--- &mkz-section2 bg:`r pal$cyan` img:white_nuclearidea.png
+
+# MESURER LA PERFORMANCE
+
+---  { tpl: slide_clean,
+       description: ""}
+
+## Introduction
+
+```{r  comment = NA, message = F, echo = F, fig.align='center'}
+
+library("diagram")
+par(mar = c(1, 1, 1, 1))
+openplotmat()
+elpos <- coordinates(c(5, 5, 5))
+fromto <- matrix(ncol = 2, byrow = TRUE, data = c(2, 7, 7, 9, 7, 12, 9, 12, 12, 2))
+
+nr <- nrow(fromto)
+arrpos <- matrix(ncol = 2, nrow = nr)
+#for (i in 1:nr) arrpos[i, ] <- straightarrow(to = elpos[fromto[i, 2], ], from = elpos[fromto[i, 1], ],lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+
+straightarrow(to = elpos[fromto[1, 2], ], from = elpos[fromto[1, 1], ],lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+straightarrow(to = elpos[fromto[2, 2], ], from = elpos[fromto[2, 1], ],lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+straightarrow(to = elpos[fromto[3, 2], ], from = elpos[fromto[3, 1], ],lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+bentarrow(path="V",to = elpos[fromto[4, 2], ], from = elpos[fromto[4, 1], ],lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+segmentarrow(path="LVR",dd = 0.25,to = elpos[fromto[5, 2], ], from = elpos[fromto[5, 1], ],lwd = 2, arr.pos = 0.6, arr.length = 0.5)
+
+textellipse(elpos[2,], 0.1, lab = "Write\nCode", box.col = "green", shadow.col = "darkgreen", shadow.size = 0.005, cex = 1.5)
+texthexa(elpos[7,], 0.15,0.05, lab = "Is it Fast ?", box.col = "blue", shadow.col = "darkblue", shadow.size = 0.005, cex = 1.5)
+textround(elpos[9,], 0.10,0.05, lab = "Don't believe\nyou", box.col = "blue", shadow.col = "darkblue", shadow.size = 0.005, cex = 1.5)
+textmulti(elpos[12,], 0.15,0.17, nr=3, angle=270, lab = "Measure It", box.col = "blue", shadow.col = "darkblue", shadow.size = 0.005, cex = 1.5)
+
+```
+
+
+---  { tpl: slide,
+       description: "L'analyse du code est necessaire lorsque les temps de traitement ne sont plus raisonnables compte tenu de l'objectif donné à l'algorithme. Ou parce que l'analyse est impossible car trop longue."}
+
+## Analyser
+
+* Identifier les goulots d'étranglement d'un code peut être très chronophage dès lors que le nombre de ligne de code devient élevé
+* C'est cependant une étape indispensable pour examiner les temps de traitement de chaque partie du programme
+* Le programme peut fonctionner assez rapidement sur le jeu de données test mais qu'en sera t'il sur des "vrais" données 
+* Ce doit etre un reflexe chez le Data Scientist
+
+---  { tpl: slide,
+       description: "la fonction system.time retourne le temps CPU (entre autre) de l'expression utilisée"}
+
+## System.time()
+
+```{r  comment = NA}
+# Calcul de la somme cumulée du vecteur x
+x <- runif(2e4)
+system.time({
+  cusum <- NULL
+  for (i in 1:length(x)) cusum <- c(cusum,sum(x[1:i]))
+})
+```
+
+* `user` correspond au temps CPU chargé de l'éxecution de l'appel des instructions utilisateur
+* `system` correspond au temps CPU chargé de l'éxecution coté système
+
+<div class="alert alert-info" role="alert"><b>Question :</b> Comment améliorer cette fonction ?
+</div>
+
+
+---  { tpl: slide,
+       description: "la fonction system.time retourne le temps CPU (entre autre) de l'expression utilisée"}
+
+## System.time()
+
+```{r  comment = NA}
+# Calcul de la somme cumulée du vecteur x
+x <- runif(2e4)
+system.time({
+  cusum <- numeric(length(x))
+  for (i in 1:length(x)) cusum[i] <- sum(x[1:i])
+})
+```
+
+* <u>Modification</u> : Préparation du vecteur de résultat
+* Gain de **25% de temps**
+
+<div class="alert alert-info" role="alert"><b>Question :</b> Mais encore ... ?
+</div>
+
+
+---  { tpl: slide,
+       description: "la fonction system.time retour le temps CPU (entre autre) de l'expression utilisée"}
+
+## System.time()
+
+```{r  comment = NA}
+# Calcul de la somme cumulée du vecteur x
+x <- runif(2e4)
+system.time({
+  cusum <- x
+  for (i in 2:length(x)) cusum[i] <- cusum[i-1]+cusum[i]
+})
+```
+
+* <u>Modification</u> : Suppression des calculs répétitifs des sum
+* **100x plus rapide** que la version précédente
+
+<div class="alert alert-info" role="alert"><b>Question :</b> On peut faire mieux encore mieux ?
+</div>
+
+
+---  { tpl: slide_clean}
+
+## System.time()
+
+```{r  comment = NA}
+# Calcul de la somme cumulée du vecteur x
+x <- runif(2e4)
+system.time({
+  cusum <- cumsum(x)
+})
+```
+
+Hum ??? Est ce que cela a vraiment marché ? Essayons avec un vecteur 100x plus grand
+
+```{r comment = NA}
+x<- runif(2e6) # avec un vecteur 100x plus grand ?
+system.time(cusum <- cumsum(x))
+```
+
+Yes !
+
+--- .segue .quote .white
+
+<q>Ok bien compris. Mais en plus simple ?</q>
+
+<style>
+.dark q {
+  color: white;
+}
+</style>
+
+---  { tpl: slide,
+         description: "Microbenchmark permet de mesurer et comparer les temps d'exécution d'expression R."}
+
+## Microbenchmark (package)
+
+```{r  comment = NA, eval=FALSE}
+f1 <- function(x) {
+  cusum <- NULL
+  for (i in 1:length(x)) cusum <- c(cusum,sum(x[1:i]))
+}
+
+f2 <- function(x) {
+  cusum <- numeric(length(x))
+  for (i in 1:length(x)) cusum[i] <- sum(x[1:i])
+}
+
+f3 <- function(x) {
+  cusum <- x
+  for (i in 2:length(x)) cusum[i] <- cusum[i-1]+cusum[i]
+}
+
+f4 <- function(x) {
+  cusum <- cumsum(x)
+}
+```
+
+
+---  { tpl: slide,
+         description: "Microbenchmark permet de mesurer et comparer les temps d'exécution d'expression R."}
+
+## Microbenchmark (package)
+
+```{r  comment = NA}
+library(microbenchmark)
+x<-runif(1e3)
+microbenchmark(f1(x),f2(x),f3(x),f4(x))
+```
+
+* Un même résultat peut etre obtenu de plusieurs manières différents. Mais il y a un fable nombre de "bonnes" manières. Ici, la bonne manière est **1000x plus rapide** que la mauvaise manière
+
+<div class="alert alert-info" role="alert"><b>Conclusion :</b> Toujours préférer les fonctions natives et déjà compilées.
+</div>
+
+
+
+---  { tpl: slide,
+       description: ""}
+
+## Conclusion
+
+* System.time et microbenchamrk permettent de comparer des bouts de code entre eux assez simplement
+* Ils sont utiles lorsque l'on a identifié où le code prend du temps d'exécution
+* Mais comment trouver les parties de code consommatrices de temps dans des milliers de lignes de code ?
+
+
+---  { tpl: slide,
+       description: "Utilisation de la puissance des serveurs pour les calculs."}
+
+## Profiling du code R
+
+* La fonction `Rprof()` lance le profiler de R
+
+* La fonction `summaryRprof()` sort les statistiques à partir du fichier généré par `Rprof()`
+
+* `Rprof()` n'est utile que si le temps d'exécution code est "mesurable" (> 1–10msecs)
+
+
+```{r  comment = NA, eval=F}
+n <- 1e5
+y <- gl(2, 100, n, labels = c("A","B"))
+x <- runif(n)
+
+Rprof(tmp <- tempfile())
+lm(x ~ y)
+Rprof()
+srp <- summaryRprof(tmp)
+unlink(tmp)
+```
+
+<div class="alert alert-info" role="alert"><b>Info :</b> tempfile() permet de générer un fichier vide dans un répertoire temporaire. Le fichier est supprimé par la fonction unlink()
+</div>
+
+---  { tpl: slide_clean,
+       description: "Utilisation de la puissance des serveurs pour les calculs."}
+
+```{r comment = NA}
+head(srp$by.self)
+```
+
+
+```{r comment = NA}
+print(head(srp$by.total))
+```
+
+
+<div class="alert alert-info" role="alert"><b>Aller plus loin :</b> d'autres packages existent : Rprof, profr, lineprof
+</div>
+
+--- &mkz-section2 bg:`r pal$orange` img:white_nuclearidea.png
+
+# LES BONNES PRATIQUES
+
+
+---  { tpl: slide,
+       description: "Utiliser les versions précompilées permet d'obtenir de meilleurs performances..."}
+
+## SQRT
+
+```{r comment = NA}
+x <- runif(100)
+microbenchmark(
+  sqrt(x),
+  x ^ 0.5
+)
+```
+
+---  { tpl: slide,
+       description: "... le contre-exemple parfait"}
+
+## MEAN
+
+```{r comment = NA}
+microbenchmark(
+  "mean1" = mean(x),
+  "mean2" = sum(x) / length(x)
+)
+```
+
+
+---  { tpl: slide,
+       description: "Ok donc testons tous !"}
+
+## SELECT
+
+```{r comment = NA}
+microbenchmark(
+  "[32, 11]"      = mtcars[32, 11],
+  "$carb[32]"     = mtcars$carb[32],
+  "[[c(11, 32)]]" = mtcars[[c(11, 32)]],
+  "[[11]][32]"    = mtcars[[11]][32],
+  ".subset2"      = .subset2(mtcars, 11)[32]
+)
+```
+
+
+---  { tpl: slide,
+       description: ""}
+
+## FILTRAGE
+
+```{r comment = NA}
+x1 <- x2 <- x3 <- x4 <- runif(1000)
+
+microbenchmark(
+  "loop"        = for (i in 1:length(x1)) if(x1[i]<=0.5) x1[i] <- 0,
+  "ifelse"      = x2 <- ifelse(x2 <= 0.5, x2, 0),
+  "inplace"     = x3[x3<=0.5] <- 0,
+  "inplace_whi" = x4[which(x4<=0.5)] <- 0
+)
+```
+
+
+---  { tpl: slide,
+       description: ""}
+
+## REMPLISSAGE
+
+```{r comment = NA}
+f1 <- function() {
+  x <- NULL; for (i in 1:10000) x<-c(x,i)
+}
+f2 <- function() {
+  x <- numeric(10000); for (i in 1:10000) x[i]<i
+}
+
+microbenchmark(
+  "extend" = f1(), "fill" = f2()
+)
+```
+
+
+
+
+---  { tpl: slide,
+       description: "Il est possible dans R de compiler son code en le vectorisant. Cela permet d'augmenter les performances."}
+
+## Compiler
+
+```{r comment = NA}
+f <- function(x) {
+  for (i in 2:length(x)) x[i] <- x[i-1]+x[i]; return(x)
+}
+
+library(compiler)
+fc <- cmpfun(f)
+
+microbenchmark(
+  "original" = f(x), "compiled" = fc(x), "internal" = cumsum(x)
+)
+```
+
+
+
+---  { tpl: slide,
+       description: "Quelques exemples de la puissance des data.table."}
+
+## data.table vs. data.frame
+
+```{r comment = NA}
+n <- 1e5
+DF <- data.frame(x=sample(c("a","b","c"),n,replace=T), y=runif(n), v=1:n)
+DT <- data.table(x=sample(c("a","b","c"),n,replace=T), y=runif(n), v=1:n)
+setkey(DT,x)
+```
+
+---  { tpl: slide,
+       description: "Quelques exemples de la puissance des data.table."}
+
+## data.table vs. data.frame
+
+```{r comment = NA}
+microbenchmark(
+  "DF.subset" = nrow(DF[which(DF$x=="b"),]),
+  "DT.subset" = nrow(DT["b",])
+)
+```
+
+---  { tpl: slide,
+       description: "Quelques exemples de la puissance des data.table."}
+
+## data.table vs. data.frame
+
+```{r comment = NA}
+microbenchmark(
+  "DF.add" = DF$y <- 1,
+  "DT.add" = DT[,y:=1]
+)
+```
+
+
+---  { tpl: slide,
+       description: "Quelques exemples de la puissance des data.table."}
+
+## Aggregate
+
+```{r comment = NA}
+microbenchmark(
+  "DF.aggregation" = aggregate(DF$y,list(DF$x),sum),
+  "DT.aggregation" = DT[,y:=1]
+)
+```
+
+
+--- &mkz-section2 bg:`r pal$cyan` img:white_nuclearidea.png
+
+# PARALLEL R
+
+
+

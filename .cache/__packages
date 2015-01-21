@@ -1,0 +1,11 @@
+base
+data.table
+diagram
+httr
+lattice
+lubridate
+microbenchmark
+mkz.api
+rjson
+shape
+slidify

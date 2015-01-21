@@ -1,0 +1,17 @@
+---
+layout: slide
+---
+
+{{{ slide.content }}}
+
+{{# slide.blocks }}
+<div class="row-fluid" style="height:{{{ height }}}; margin-bottom:2%">
+  <div class="span2" style="height:100%">
+    <img alt="75%x75%" class="img75" src="assets/img/{{{ img }}}" style="height: 100%; width: 100%; display: block;">
+  </div>
+  <div class="span10" style="height:100%; padding-left:10px; border-left:2px solid gray;">
+    <h3>{{{ title }}}</h3>
+    {{{ content }}}
+  </div>
+</div>
+{{/ slide.blocks }}
