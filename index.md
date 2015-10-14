@@ -1,8 +1,8 @@
 ---
 title       : Améliorer les performances de R
-subtitle    : 2014-2015
+subtitle    : Année scolaire 2015-2016
 author      : Matthias Oehler
-job         : Vice Président Data @Makazi
+job         : Directeur Général Adjoint @FullsixData
 github      : {user: oehlr, repo: slide-introdatascience-session3}
 framework   : io2012        # {io2012, html5slides, shower, dzslides, ...}
 highlighter : highlight.js  # {highlight.js, prettify, highlight}
@@ -11,7 +11,7 @@ widgets     : [bootstrap]            # {mathjax, quiz, bootstrap}
 mode        : selfcontained # {standalone, draft}
 knit        : slidify::knit2slides
 logo        : logods.png
-biglogo     : logo_polytech.jpg
+biglogo     : logo_ensai.png
 --- { tpl: mkz-cols-thumbs, 
       description: ""}
 
@@ -358,9 +358,9 @@ Unit: microseconds
 
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: "Ok donc testons tous !"}
 
-## SQRT
+## SELECT
 
 
 ```r
@@ -389,9 +389,9 @@ Unit: nanoseconds
 
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: ""}
 
-## SQRT
+## FILTRAGE
 
 
 ```r
@@ -420,9 +420,9 @@ Unit: microseconds
 
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: ""}
 
-## Prepare vectors
+## REMPLISSAGE
 
 
 ```r
@@ -453,7 +453,7 @@ Unit: milliseconds
 
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: "Il est possible dans R de compiler son code en le vectorisant. Cela permet d'augmenter les performances."}
 
 ## Compiler
 
@@ -486,7 +486,7 @@ Unit: nanoseconds
 
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: "Quelques exemples de la puissance des data.table."}
 
 ## data.table vs. data.frame
 
@@ -499,7 +499,7 @@ setkey(DT,x)
 ```
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: "Quelques exemples de la puissance des data.table."}
 
 ## data.table vs. data.frame
 
@@ -523,7 +523,7 @@ Unit: milliseconds
 ```
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: "Quelques exemples de la puissance des data.table."}
 
 ## data.table vs. data.frame
 
@@ -548,7 +548,7 @@ Unit: microseconds
 
 
 ---  { tpl: slide,
-       description: "Utilisation de la puissance des serveurs pour les calculs."}
+       description: "Quelques exemples de la puissance des data.table."}
 
 ## Aggregate
 
@@ -574,12 +574,7 @@ Unit: microseconds
 
 --- &mkz-section2 bg:#00B7BE img:white_nuclearidea.png
 
-# R & PACKAGE
-
-
---- &mkz-section2 bg:#00B7BE img:white_nuclearidea.png
-
-# PRODUIT
+# PARALLEL R
 
 
 
